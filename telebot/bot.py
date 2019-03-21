@@ -26,6 +26,53 @@ class GlueWordDictionary:
             self.g_words[not_glue[1:]] = glue[1:]
 
 
+PartOfSpeech = {
+    'СУ': 'Существительное',
+    'ПП': 'Полное прилагательное',
+    'КП': 'Краткое прилагательное',
+    'ДЕ': 'Деепричастие',
+    'ГЛ': 'Глагол',
+    'НП': 'Неопределённое'}
+
+
+class FlexiesDictionary:
+    f_name = ''
+    f_words = {}
+
+    def __init__(self, file_name):
+        self.f_name = file_name
+        f = open(self.f_name, 'r', encoding="utf8")
+
+        while True:
+            line = f.readline()
+            if not line:
+                break
+            self.f_words[line.split()[1]] = []  # Потом надо заполнить морфологическую информацию
+            for x in range(line.split()[2]):
+                f.readline()
+
+
+class CharactersDictionary:
+    f_name = ''
+    c_words = {}
+    quaziBase = ''
+    canonicForm = ''
+    wordType = PartOfSpeech['НП']
+    wordChanging = -1
+
+    def __init__(self, file_name):
+        self.f_name = file_name
+        f = open(self.f_name, 'r', encoding="urf8")
+
+        for line in f:
+            split_line = line.split()
+            self.quaziBase = split_line[1]
+            self.canonicForm = split_line[2]
+            self.wordType = PartOfSpeech[split_line[3]]
+            self.wordChanging = split_line[4]
+
+
+ch_dictionary = CharactersDictionary(os.path.join(script_dir, '../Dictionaries/Characters.dct'))
 gw_dictionary = GlueWordDictionary(os.path.join(script_dir, '../Dictionaries/GluedWords.dct'))
 greetings = ('hi', 'hello')
 
@@ -38,6 +85,10 @@ def today_greetings(hour):
     elif 17 <= hour < 23:
         return 'Good evening, '
 
+def morphology(word):
+
+    return word
+
 
 # Функция обрабатывает любой текст, который пришёл
 @bot.message_handler(content_types=["text"])
@@ -46,7 +97,7 @@ def repeat_all_messages(message):
         bot.send_message(message.chat.id, today_greetings(datetime.datetime.now().hour)+message.from_user.first_name)
     else:
         input_str = message.text.upper()  # Переводим входную фразу в верхний регистр
-        # Склееваем сложные лексемы
+        # Склеиваем сложные лексемы
         for gw in gw_dictionary.g_words:
             if gw in input_str:
                 input_str = input_str.replace(gw, gw_dictionary.g_words[gw])
